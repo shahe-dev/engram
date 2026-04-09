@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 /**
  * MCP stdio server — exposes engram knowledge graph to Claude Code and other MCP clients.
  * Tools: query_graph, god_nodes, graph_stats, shortest_path, benchmark

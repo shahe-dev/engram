@@ -1,11 +1,12 @@
 {
-  "name": "engram-ai",
-  "version": "0.1.0",
+  "name": "engramx",
+  "version": "0.1.1",
   "description": "AI coding memory that learns from every session — persistent, structural, universal",
   "type": "module",
   "bin": {
-    "engram": "./dist/cli.js",
-    "engram-serve": "./dist/serve.js"
+    "engram": "dist/cli.js",
+    "engramx": "dist/cli.js",
+    "engram-serve": "dist/serve.js"
   },
   "main": "./dist/index.js",
   "scripts": {

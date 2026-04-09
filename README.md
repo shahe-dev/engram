@@ -55,13 +55,13 @@ engram fixes this with three things no other tool combines:
 ## Install
 
 ```bash
-npx engram-ai init
+npx engramx init
 ```
 
 Or install globally:
 
 ```bash
-npm install -g engram-ai
+npm install -g engramx
 engram init
 ```
 
@@ -103,7 +103,7 @@ Connect engram to Claude Code, Windsurf, or any MCP client:
   "mcpServers": {
     "engram": {
       "command": "npx",
-      "args": ["-y", "engram-ai", "serve", "/path/to/your/project"]
+      "args": ["-y", "engramx", "serve", "/path/to/your/project"]
     }
   }
 }
