@@ -7,7 +7,7 @@ export default defineConfig({
     serve: "src/serve.ts",
   },
   format: ["esm"],
-  dts: false,
+  dts: false, // TODO: enable when tsup supports TS7 baseUrl deprecation
   clean: true,
   target: "node18",
   shims: true,

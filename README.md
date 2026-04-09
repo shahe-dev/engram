@@ -53,16 +53,17 @@ engram fixes this with three things no other tool combines:
 ## Install
 
 ```bash
-npm install -g engram
+npx engram-ai init
 ```
 
-Or use directly without installing:
+Or install globally:
 
 ```bash
-npx engram init
+npm install -g engram-ai
+engram init
 ```
 
-Requires Node.js 18+. Zero native dependencies.
+Requires Node.js 18+. Zero native dependencies. No build tools needed.
 
 ## Usage
 
@@ -93,21 +94,27 @@ Results are stored in a local SQLite database (`.engram/graph.db`) and queryable
 
 ## MCP Server
 
-Connect engram to Claude Code or any MCP client:
-
-```bash
-# Start the MCP server
-node node_modules/engram/dist/serve.js /path/to/project
-```
-
-Add to your Claude Code MCP config:
+Connect engram to Claude Code, Windsurf, or any MCP client:
 
 ```json
 {
   "mcpServers": {
     "engram": {
-      "command": "node",
-      "args": ["/path/to/engram/dist/serve.js", "/path/to/project"]
+      "command": "npx",
+      "args": ["-y", "engram-ai", "serve", "/path/to/your/project"]
+    }
+  }
+}
+```
+
+Or if installed globally:
+
+```json
+{
+  "mcpServers": {
+    "engram": {
+      "command": "engram-serve",
+      "args": ["/path/to/your/project"]
     }
   }
 }
@@ -132,6 +139,20 @@ engram gen --target agents    # Write to AGENTS.md
 ```
 
 This writes a structured codebase summary — god nodes, file structure, key dependencies, decisions — so your AI assistant navigates by structure instead of grepping.
+
+## How engram Compares
+
+| | engram | Mem0 | Graphify | aider repo-map | CLAUDE.md |
+|---|---|---|---|---|---|
+| **Code structure** | AST extraction (10 langs) | No | Yes (tree-sitter) | Yes (tree-sitter) | No |
+| **Persistent memory** | SQLite graph, survives sessions | Yes (vector + graph) | Static snapshot | Per-session only | Manual text file |
+| **Session learning** | Mines decisions, patterns, mistakes | Generic facts | No | No | You write it by hand |
+| **Universal** | MCP + CLI + auto-gen | API only | Claude Code only | aider only | Claude Code only |
+| **LLM cost** | $0 | $0 (self-host) / paid cloud | Tokens for docs/images | Per-session | $0 |
+| **Code-specific** | Built for codebases | Generic AI memory | Yes | Yes | No |
+| **Temporal** | Git history mining | No | No | No | No |
+
+**The gap nobody fills:** Code-structural understanding + persistent cross-session learning + temporal awareness + works with every AI tool. engram is the first to combine all four.
 
 ## Confidence System
 
