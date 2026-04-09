@@ -1,4 +1,23 @@
-# engram
+<p align="center">
+  <img src="assets/banner.png" alt="engram — AI coding memory" width="100%">
+</p>
+
+<p align="center">
+  <a href="#install"><strong>Install</strong></a> ·
+  <a href="#usage"><strong>Usage</strong></a> ·
+  <a href="#mcp-server"><strong>MCP Server</strong></a> ·
+  <a href="#how-it-works"><strong>How It Works</strong></a> ·
+  <a href="#contributing"><strong>Contributing</strong></a>
+</p>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/license-Apache%202.0-blue" alt="License">
+  <img src="https://img.shields.io/badge/node-%3E%3D18-brightgreen" alt="Node">
+  <img src="https://img.shields.io/badge/LLM%20cost-$0-green" alt="Zero LLM cost">
+  <img src="https://img.shields.io/badge/native%20deps-zero-green" alt="Zero native deps">
+</p>
+
+---
 
 **Your AI coding assistant forgets everything. We fixed that.**
 

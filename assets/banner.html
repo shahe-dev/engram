@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>engram banner</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@300;400;500&family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    width: 1280px;
+    height: 640px;
+    overflow: hidden;
+    background: #0a0a0c;
+    font-family: 'Space Grotesk', sans-serif;
+    position: relative;
+  }
+
+  /* Subtle grid texture */
+  .grid-bg {
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(255,255,255,0.015) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.015) 1px, transparent 1px);
+    background-size: 40px 40px;
+  }
+
+  /* Warm gradient wash — top right */
+  .gradient-wash {
+    position: absolute;
+    top: -120px;
+    right: -80px;
+    width: 600px;
+    height: 600px;
+    background: radial-gradient(circle, rgba(217, 119, 6, 0.08) 0%, transparent 70%);
+    filter: blur(40px);
+  }
+
+  /* Secondary wash — bottom left */
+  .gradient-wash-2 {
+    position: absolute;
+    bottom: -100px;
+    left: -60px;
+    width: 500px;
+    height: 500px;
+    background: radial-gradient(circle, rgba(168, 85, 247, 0.04) 0%, transparent 70%);
+    filter: blur(60px);
+  }
+
+  /* Knowledge graph visualization */
+  .graph-container {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 580px;
+    height: 640px;
+  }
+
+  .graph-container svg {
+    width: 100%;
+    height: 100%;
+  }
+
+  .graph-edge {
+    stroke: rgba(217, 119, 6, 0.15);
+    stroke-width: 1;
+  }
+
+  .graph-edge.highlighted {
+    stroke: rgba(217, 119, 6, 0.4);
+    stroke-width: 1.5;
+  }
+
+  .graph-node {
+    fill: rgba(217, 119, 6, 0.6);
+  }
+
+  .graph-node.dim {
+    fill: rgba(255, 255, 255, 0.08);
+  }
+
+  .graph-node.bright {
+    fill: rgba(217, 119, 6, 0.9);
+  }
+
+  .graph-label {
+    fill: rgba(255, 255, 255, 0.3);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    font-weight: 300;
+  }
+
+  .graph-label.bright {
+    fill: rgba(255, 255, 255, 0.7);
+    font-size: 10px;
+    font-weight: 400;
+  }
+
+  /* Main content */
+  .content {
+    position: relative;
+    z-index: 10;
+    padding: 80px 0 0 80px;
+    max-width: 700px;
+  }
+
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    border: 1px solid rgba(217, 119, 6, 0.3);
+    border-radius: 100px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 400;
+    color: rgba(217, 119, 6, 0.9);
+    letter-spacing: 0.5px;
+    margin-bottom: 32px;
+    background: rgba(217, 119, 6, 0.05);
+  }
+
+  .badge-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: rgb(217, 119, 6);
+    box-shadow: 0 0 8px rgba(217, 119, 6, 0.6);
+  }
+
+  h1 {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 82px;
+    font-weight: 700;
+    color: #f5f5f0;
+    letter-spacing: -3px;
+    line-height: 0.95;
+    margin-bottom: 24px;
+  }
+
+  h1 span {
+    color: rgb(217, 119, 6);
+  }
+
+  .tagline {
+    font-size: 19px;
+    font-weight: 300;
+    color: rgba(255, 255, 255, 0.5);
+    line-height: 1.5;
+    max-width: 480px;
+    margin-bottom: 40px;
+  }
+
+  .tagline strong {
+    color: rgba(255, 255, 255, 0.85);
+    font-weight: 500;
+  }
+
+  /* Terminal snippet */
+  .terminal {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 8px;
+    padding: 16px 20px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    line-height: 1.7;
+    max-width: 420px;
+  }
+
+  .terminal .prompt {
+    color: rgba(217, 119, 6, 0.8);
+  }
+
+  .terminal .cmd {
+    color: rgba(255, 255, 255, 0.85);
+  }
+
+  .terminal .output {
+    color: rgba(255, 255, 255, 0.35);
+  }
+
+  .terminal .highlight {
+    color: rgba(74, 222, 128, 0.8);
+  }
+
+  /* Bottom bar */
+  .bottom-bar {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 20px 80px;
+    display: flex;
+    align-items: center;
+    gap: 32px;
+    border-top: 1px solid rgba(255, 255, 255, 0.04);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.25);
+    z-index: 10;
+  }
+
+  .bottom-bar .stat {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .bottom-bar .stat-value {
+    color: rgba(255, 255, 255, 0.6);
+    font-weight: 500;
+  }
+</style>
+</head>
+<body>
+
+<div class="grid-bg"></div>
+<div class="gradient-wash"></div>
+<div class="gradient-wash-2"></div>
+
+<!-- Knowledge graph visualization -->
+<div class="graph-container">
+<svg viewBox="0 0 580 640">
+  <!-- Edges -->
+  <line class="graph-edge" x1="290" y1="180" x2="380" y2="120"/>
+  <line class="graph-edge highlighted" x1="290" y1="180" x2="350" y2="280"/>
+  <line class="graph-edge" x1="290" y1="180" x2="200" y2="240"/>
+  <line class="graph-edge highlighted" x1="350" y1="280" x2="430" y2="340"/>
+  <line class="graph-edge" x1="350" y1="280" x2="280" y2="360"/>
+  <line class="graph-edge" x1="380" y1="120" x2="480" y2="160"/>
+  <line class="graph-edge" x1="380" y1="120" x2="420" y2="60"/>
+  <line class="graph-edge highlighted" x1="430" y1="340" x2="500" y2="400"/>
+  <line class="graph-edge" x1="430" y1="340" x2="380" y2="420"/>
+  <line class="graph-edge" x1="280" y1="360" x2="200" y2="400"/>
+  <line class="graph-edge" x1="280" y1="360" x2="340" y2="440"/>
+  <line class="graph-edge" x1="500" y1="400" x2="520" y2="480"/>
+  <line class="graph-edge" x1="500" y1="400" x2="440" y2="460"/>
+  <line class="graph-edge" x1="200" y1="240" x2="140" y2="310"/>
+  <line class="graph-edge" x1="200" y1="240" x2="160" y2="180"/>
+  <line class="graph-edge" x1="480" y1="160" x2="520" y2="240"/>
+  <line class="graph-edge" x1="520" y1="240" x2="500" y2="320"/>
+  <line class="graph-edge" x1="140" y1="310" x2="180" y2="400"/>
+  <line class="graph-edge" x1="340" y1="440" x2="400" y2="520"/>
+  <line class="graph-edge" x1="440" y1="460" x2="400" y2="520"/>
+  <line class="graph-edge" x1="420" y1="60" x2="500" y2="80"/>
+
+  <!-- Nodes -->
+  <circle class="graph-node bright" cx="290" cy="180" r="6"/>
+  <circle class="graph-node bright" cx="350" cy="280" r="5"/>
+  <circle class="graph-node" cx="380" cy="120" r="4"/>
+  <circle class="graph-node bright" cx="430" cy="340" r="5"/>
+  <circle class="graph-node" cx="280" cy="360" r="3.5"/>
+  <circle class="graph-node" cx="200" cy="240" r="4"/>
+  <circle class="graph-node dim" cx="480" cy="160" r="3"/>
+  <circle class="graph-node dim" cx="420" cy="60" r="2.5"/>
+  <circle class="graph-node bright" cx="500" cy="400" r="4.5"/>
+  <circle class="graph-node" cx="380" cy="420" r="3"/>
+  <circle class="graph-node dim" cx="200" cy="400" r="2.5"/>
+  <circle class="graph-node" cx="340" cy="440" r="3"/>
+  <circle class="graph-node dim" cx="520" cy="480" r="2.5"/>
+  <circle class="graph-node dim" cx="440" cy="460" r="2.5"/>
+  <circle class="graph-node dim" cx="140" cy="310" r="2.5"/>
+  <circle class="graph-node dim" cx="160" cy="180" r="2"/>
+  <circle class="graph-node dim" cx="520" cy="240" r="2.5"/>
+  <circle class="graph-node dim" cx="500" cy="320" r="2"/>
+  <circle class="graph-node dim" cx="180" cy="400" r="2"/>
+  <circle class="graph-node" cx="400" cy="520" r="3"/>
+  <circle class="graph-node dim" cx="500" cy="80" r="2"/>
+
+  <!-- Labels for bright nodes -->
+  <text class="graph-label bright" x="290" y="200" text-anchor="middle">GraphStore</text>
+  <text class="graph-label bright" x="350" y="300" text-anchor="middle">queryGraph()</text>
+  <text class="graph-label" x="380" y="140" text-anchor="middle">ast-miner</text>
+  <text class="graph-label bright" x="430" y="360" text-anchor="middle">extractFile()</text>
+  <text class="graph-label" x="280" y="380" text-anchor="middle">core.ts</text>
+  <text class="graph-label" x="200" y="260" text-anchor="middle">session-miner</text>
+  <text class="graph-label bright" x="500" y="420" text-anchor="middle">init()</text>
+  <text class="graph-label" x="400" y="540" text-anchor="middle">autogen</text>
+</svg>
+</div>
+
+<!-- Main content -->
+<div class="content">
+  <div class="badge">
+    <div class="badge-dot"></div>
+    AI CODING MEMORY
+  </div>
+
+  <h1>engr<span>a</span>m</h1>
+
+  <p class="tagline">
+    Your AI coding assistant <strong>forgets everything</strong>.<br>
+    Persistent memory that learns from every session.
+  </p>
+
+  <div class="terminal">
+    <span class="prompt">$</span> <span class="cmd">npx engram init</span><br>
+    <span class="output">🌳 60 nodes, 96 edges</span> <span class="highlight">· 0 tokens used</span><br>
+    <span class="output">📊 11x fewer tokens vs relevant files</span><br>
+    <span class="highlight">✅ Your AI now has persistent memory.</span>
+  </div>
+</div>
+
+<!-- Bottom bar -->
+<div class="bottom-bar">
+  <div class="stat"><span class="stat-value">10</span> languages</div>
+  <div class="stat"><span class="stat-value">0</span> LLM cost</div>
+  <div class="stat"><span class="stat-value">0</span> cloud</div>
+  <div class="stat">works with <span class="stat-value">Claude Code</span> · <span class="stat-value">Cursor</span> · <span class="stat-value">Codex</span> · <span class="stat-value">aider</span></div>
+</div>
+
+</body>
+</html>
