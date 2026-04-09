@@ -267,6 +267,23 @@ export class GraphStore {
     };
   }
 
+  getStat(key: string): string | null {
+    const stmt = this.db.prepare("SELECT value FROM stats WHERE key = ?");
+    stmt.bind([key]);
+    if (stmt.step()) {
+      const val = stmt.getAsObject().value as string;
+      stmt.free();
+      return val;
+    }
+    stmt.free();
+    return null;
+  }
+
+  getStatNum(key: string): number {
+    const val = this.getStat(key);
+    return val ? Number(val) : 0;
+  }
+
   setStat(key: string, value: string): void {
     this.db.run(
       "INSERT OR REPLACE INTO stats (key, value) VALUES (?, ?)",

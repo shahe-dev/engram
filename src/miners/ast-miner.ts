@@ -3,7 +3,7 @@
  * Zero LLM cost. Extracts classes, functions, imports, call graphs.
  * Supports: TypeScript, JavaScript, Python, Go, Rust, Java, C, C++, Ruby, PHP
  */
-import { readFileSync, existsSync, readdirSync, statSync } from "node:fs";
+import { readFileSync, existsSync, readdirSync, realpathSync } from "node:fs";
 import { basename, extname, join, relative } from "node:path";
 import type { GraphEdge, GraphNode } from "../graph/schema.js";
 
@@ -103,7 +103,8 @@ function makeId(...parts: string[]): string {
     .join("_")
     .replace(/[^a-zA-Z0-9]+/g, "_")
     .replace(/^_|_$/g, "")
-    .toLowerCase();
+    .toLowerCase()
+    .slice(0, 120);
 }
 
 interface ExtractionResult {
@@ -480,12 +481,23 @@ export function extractDirectory(
   let fileCount = 0;
   let totalLines = 0;
 
+  const visitedDirs = new Set<string>();
+
   function walk(dir: string): void {
+    // Symlink loop protection
+    let realDir: string;
+    try {
+      realDir = realpathSync(dir);
+    } catch {
+      return; // broken symlink
+    }
+    if (visitedDirs.has(realDir)) return;
+    visitedDirs.add(realDir);
+
     const entries = readdirSync(dir, { withFileTypes: true });
     for (const entry of entries) {
       const fullPath = join(dir, entry.name);
 
-      // Skip hidden dirs, node_modules, dist, .git, .engram
       if (entry.isDirectory()) {
         if (
           entry.name.startsWith(".") ||

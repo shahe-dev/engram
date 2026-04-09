@@ -26,12 +26,12 @@ program
     );
 
     const bench = await benchmark(projectPath);
-    if (bench.naiveTokens > 0 && bench.reductionRatio > 1) {
+    if (bench.naiveFullCorpus > 0 && bench.reductionVsRelevant > 1) {
       console.log(
-        chalk.cyan(`\n📊 Token savings: ${chalk.bold(bench.reductionRatio + "x")} fewer tokens per query`)
+        chalk.cyan(`\n📊 Token savings: ${chalk.bold(bench.reductionVsRelevant + "x")} fewer tokens vs relevant files (${bench.reductionVsFull}x vs full corpus)`)
       );
       console.log(
-        chalk.dim(`   Naive: ~${bench.naiveTokens.toLocaleString()} tokens | Graph query: ~${bench.avgQueryTokens.toLocaleString()} tokens`)
+        chalk.dim(`   Full corpus: ~${bench.naiveFullCorpus.toLocaleString()} tokens | Graph query: ~${bench.avgQueryTokens.toLocaleString()} tokens`)
       );
     }
 
@@ -112,11 +112,12 @@ program
       console.log(`  Last mined:  ${ago < 60 ? ago + "m ago" : Math.round(ago / 60) + "h ago"}`);
     }
 
-    if (bench.naiveTokens > 0) {
+    if (bench.naiveFullCorpus > 0) {
       console.log(`\n  ${chalk.cyan("Token savings:")}`);
-      console.log(`    Naive corpus:  ~${bench.naiveTokens.toLocaleString()} tokens`);
+      console.log(`    Full corpus:   ~${bench.naiveFullCorpus.toLocaleString()} tokens`);
       console.log(`    Avg query:     ~${bench.avgQueryTokens.toLocaleString()} tokens`);
-      console.log(`    Reduction:     ${chalk.bold.cyan(bench.reductionRatio + "x")} fewer tokens per query`);
+      console.log(`    vs relevant:   ${chalk.bold.cyan(bench.reductionVsRelevant + "x")} fewer tokens`);
+      console.log(`    vs full:       ${chalk.bold.cyan(bench.reductionVsFull + "x")} fewer tokens`);
     }
     console.log();
   });
@@ -142,11 +143,12 @@ program
   .action(async (opts: { project: string }) => {
     const result = await benchmark(opts.project);
     console.log(chalk.bold("\n⚡ engram token reduction benchmark\n"));
-    console.log(`  Corpus:     ~${result.naiveTokens.toLocaleString()} tokens (naive)`);
-    console.log(`  Avg query:  ~${result.avgQueryTokens.toLocaleString()} tokens`);
-    console.log(`  Reduction:  ${chalk.bold.green(result.reductionRatio + "x")} fewer tokens per query\n`);
+    console.log(`  Full corpus:     ~${result.naiveFullCorpus.toLocaleString()} tokens`);
+    console.log(`  Avg graph query: ~${result.avgQueryTokens.toLocaleString()} tokens`);
+    console.log(`  vs relevant:     ${chalk.bold.green(result.reductionVsRelevant + "x")} fewer tokens`);
+    console.log(`  vs full corpus:  ${chalk.bold.green(result.reductionVsFull + "x")} fewer tokens\n`);
     for (const pq of result.perQuestion) {
-      console.log(`  ${chalk.dim(`[${pq.reduction}x]`)} ${pq.question}`);
+      console.log(`  ${chalk.dim(`[${pq.reductionRelevant}x relevant / ${pq.reductionFull}x full]`)} ${pq.question}`);
     }
     console.log();
   });

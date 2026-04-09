@@ -19,7 +19,11 @@ function runGit(args: string[], cwd: string): string {
       maxBuffer: 10 * 1024 * 1024,
       timeout: 15000,
     }).trim();
-  } catch {
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : String(err);
+    if (msg.includes("TIMEOUT") || msg.includes("timed out")) {
+      console.error(`[engram] git command timed out: git ${args.join(" ")}`);
+    }
     return "";
   }
 }

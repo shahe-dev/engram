@@ -41,16 +41,10 @@ export function recordSession(
 }
 
 export function getCumulativeStats(store: GraphStore): CumulativeStats {
-  const db = (store as any).db;
-  const getStat = (key: string): number => {
-    const rows = db.exec(`SELECT value FROM stats WHERE key = '${key}'`);
-    return rows[0] ? Number(rows[0].values[0][0]) : 0;
-  };
-
-  const totalSessions = getStat("total_sessions");
-  const totalNaiveTokens = getStat("total_naive_tokens");
-  const totalGraphTokens = getStat("total_graph_tokens");
-  const totalSaved = getStat("total_tokens_saved");
+  const totalSessions = store.getStatNum("total_sessions");
+  const totalNaiveTokens = store.getStatNum("total_naive_tokens");
+  const totalGraphTokens = store.getStatNum("total_graph_tokens");
+  const totalSaved = store.getStatNum("total_tokens_saved");
   const avgReduction = totalGraphTokens > 0
     ? Math.round((totalNaiveTokens / totalGraphTokens) * 10) / 10
     : 0;
@@ -58,13 +52,4 @@ export function getCumulativeStats(store: GraphStore): CumulativeStats {
     Math.round((totalSaved / 1_000_000) * COST_PER_MILLION_TOKENS * 100) / 100;
 
   return { totalSessions, totalNaiveTokens, totalGraphTokens, totalSaved, avgReduction, estimatedCostSaved };
-}
-
-export function formatStats(stats: CumulativeStats): string {
-  return [
-    `Sessions:      ${stats.totalSessions}`,
-    `Tokens saved:  ${stats.totalSaved.toLocaleString()}`,
-    `Avg reduction: ${stats.avgReduction}x`,
-    `Cost saved:    $${stats.estimatedCostSaved.toFixed(2)}`,
-  ].join("\n");
 }
