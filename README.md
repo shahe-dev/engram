@@ -13,7 +13,7 @@
 <p align="center">
   <a href="https://github.com/NickCirv/engram/actions"><img src="https://github.com/NickCirv/engram/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
   <img src="https://img.shields.io/badge/license-Apache%202.0-blue" alt="License">
-  <img src="https://img.shields.io/badge/node-%3E%3D18-brightgreen" alt="Node">
+  <img src="https://img.shields.io/badge/node-%3E%3D20-brightgreen" alt="Node">
   <img src="https://img.shields.io/badge/tests-63%20passing-brightgreen" alt="Tests">
   <img src="https://img.shields.io/badge/LLM%20cost-$0-green" alt="Zero LLM cost">
   <img src="https://img.shields.io/badge/native%20deps-zero-green" alt="Zero native deps">
@@ -65,7 +65,7 @@ npm install -g engram-ai
 engram init
 ```
 
-Requires Node.js 18+. Zero native dependencies. No build tools needed.
+Requires Node.js 20+. Zero native dependencies. No build tools needed.
 
 ## Usage
 
