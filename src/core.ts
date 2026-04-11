@@ -218,6 +218,14 @@ export interface FileContextResult {
  * is considered "full" for confidence purposes. Tuned empirically on
  * 2026-04-11: auth.ts fixture with 2 code nodes (class + function) should
  * be borderline, 3+ should confidently intercept.
+ *
+ * KNOWN LIMITATION: this formula undervalues files with a single large
+ * class + many methods. The AST miner currently emits one node per class
+ * (not one per method), so a 20-method file is counted as 1 code node.
+ * The result is conservative passthrough — we'd rather miss a chance to
+ * save tokens than feed Claude a sparse summary. v0.3.1 will tune this
+ * from real hook-stats data, potentially by folding edge degree into the
+ * coverage score so a richly-connected class node counts for more.
  */
 const FILE_CONTEXT_COVERAGE_CEILING = 3;
 

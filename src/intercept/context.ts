@@ -59,9 +59,17 @@ export function _resetCacheForTests(): void {
  */
 export function normalizePath(filePath: string, cwd: string): string {
   if (!filePath) return "";
-  const abs = isAbsolute(filePath) ? filePath : resolve(cwd, filePath);
-  // Collapse `..` and `.` segments; do not follow symlinks.
-  return resolve(abs);
+  try {
+    const abs = isAbsolute(filePath) ? filePath : resolve(cwd, filePath);
+    // Collapse `..` and `.` segments; do not follow symlinks.
+    return resolve(abs);
+  } catch {
+    // path.resolve historically accepted weird inputs but recent Node
+    // versions tighten validation on null bytes and invalid UTF-16
+    // surrogates. Any throw here resolves to "no intercept" — safer than
+    // letting the error propagate through the hook.
+    return "";
+  }
 }
 
 /**

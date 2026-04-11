@@ -470,6 +470,8 @@ export function renderFileStructure(
   }
 
   // Kind render order — entities users care about most, then metadata kinds.
+  // Matches the NodeKind union in schema.ts exactly; do not add kinds that
+  // don't exist in the schema or TS will flag them.
   const kindOrder: GraphNode["kind"][] = [
     "class",
     "interface",
@@ -478,7 +480,6 @@ export function renderFileStructure(
     "method",
     "variable",
     "import",
-    "export" as GraphNode["kind"], // defensive; not a real kind today
     "module",
     "file",
     "decision",
