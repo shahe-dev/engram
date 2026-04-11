@@ -373,14 +373,27 @@ export interface MistakeEntry {
  * v0.2: list mistake nodes from the graph. Powers the `engram mistakes`
  * CLI command and the `list_mistakes` MCP tool. Mistakes are sorted by
  * most-recently-verified first.
+ *
+ * v0.3: added `sourceFile` option. When set, only returns mistakes whose
+ * `sourceFile` matches (exact string match, project-relative). Used by
+ * the Edit/Write hook handler for per-file landmine lookups.
  */
 export async function mistakes(
   projectRoot: string,
-  options: { limit?: number; sinceDays?: number } = {}
+  options: {
+    limit?: number;
+    sinceDays?: number;
+    sourceFile?: string;
+  } = {}
 ): Promise<MistakeEntry[]> {
   const store = await getStore(projectRoot);
   try {
     let items = store.getAllNodes().filter((n) => n.kind === "mistake");
+
+    if (options.sourceFile !== undefined) {
+      const target = options.sourceFile;
+      items = items.filter((m) => m.sourceFile === target);
+    }
 
     if (options.sinceDays !== undefined) {
       const cutoff = Date.now() - options.sinceDays * 24 * 60 * 60 * 1000;
