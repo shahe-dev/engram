@@ -31,6 +31,18 @@ import {
   type EditWriteHookPayload,
 } from "./handlers/edit-write.js";
 import { handleBash, type BashHookPayload } from "./handlers/bash.js";
+import {
+  handleSessionStart,
+  type SessionStartHookPayload,
+} from "./handlers/session-start.js";
+import {
+  handleUserPromptSubmit,
+  type UserPromptHookPayload,
+} from "./handlers/user-prompt.js";
+import {
+  handlePostTool,
+  type PostToolHookPayload,
+} from "./handlers/post-tool.js";
 
 /**
  * Minimum validated shape of a hook payload as delivered to `dispatchHook`.
@@ -70,16 +82,19 @@ function validatePayload(
  * appropriate handler, and returns its result wrapped in runHandler's
  * error/timeout safety net.
  *
- * Handler registry (updated as Day N handlers ship):
+ * Handler registry (v0.3.0 Sentinel complete):
  *
- *   | Event        | Tool  | Handler              |
- *   |--------------|-------|----------------------|
- *   | PreToolUse   | Read  | handleRead           |
- *   | PreToolUse   | Edit  | handleEditOrWrite    |
- *   | PreToolUse   | Write | handleEditOrWrite    |
- *   | PreToolUse   | Bash  | handleBash           |
+ *   | Event              | Tool  | Handler                 |
+ *   |--------------------|-------|-------------------------|
+ *   | PreToolUse         | Read  | handleRead              |
+ *   | PreToolUse         | Edit  | handleEditOrWrite       |
+ *   | PreToolUse         | Write | handleEditOrWrite       |
+ *   | PreToolUse         | Bash  | handleBash              |
+ *   | SessionStart       |  —    | handleSessionStart      |
+ *   | UserPromptSubmit   |  —    | handleUserPromptSubmit  |
+ *   | PostToolUse        |  —    | handlePostTool          |
  *
- * Day 4 will add SessionStart, UserPromptSubmit, PostToolUse handlers.
+ * Unknown events and unsupported PreToolUse tools resolve to PASSTHROUGH.
  */
 export async function dispatchHook(
   rawPayload: unknown
@@ -88,18 +103,39 @@ export async function dispatchHook(
   if (payload === null) return PASSTHROUGH;
 
   const event = payload.hook_event_name;
-  const tool = typeof payload.tool_name === "string" ? payload.tool_name : "";
 
-  if (event !== "PreToolUse") {
-    // No PreToolUse dispatch target → passthrough. Day 4 will extend
-    // this with SessionStart, UserPromptSubmit, PostToolUse.
-    return PASSTHROUGH;
+  switch (event) {
+    case "PreToolUse":
+      return dispatchPreToolUse(payload);
+
+    case "SessionStart":
+      return runHandler(() =>
+        handleSessionStart(payload as unknown as SessionStartHookPayload)
+      );
+
+    case "UserPromptSubmit":
+      return runHandler(() =>
+        handleUserPromptSubmit(payload as unknown as UserPromptHookPayload)
+      );
+
+    case "PostToolUse":
+      return runHandler(() =>
+        handlePostTool(payload as unknown as PostToolHookPayload)
+      );
+
+    default:
+      return PASSTHROUGH;
   }
+}
 
-  // Narrow payload to the shape each handler expects. The dispatcher
-  // casts on its own responsibility because handlers assume minimum
-  // shape; if tool_input is malformed, the handlers will detect and
-  // passthrough.
+/**
+ * PreToolUse sub-router. Routes by tool_name to the appropriate handler.
+ * Factored out so the top-level switch stays readable.
+ */
+function dispatchPreToolUse(
+  payload: MinimalHookPayload
+): Promise<HandlerResult | Passthrough> {
+  const tool = typeof payload.tool_name === "string" ? payload.tool_name : "";
   const handlerPayload = payload as unknown as {
     readonly tool_name: string;
     readonly tool_input: Record<string, unknown>;
@@ -124,6 +160,6 @@ export async function dispatchHook(
       );
 
     default:
-      return PASSTHROUGH;
+      return Promise.resolve(PASSTHROUGH);
   }
 }

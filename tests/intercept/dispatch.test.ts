@@ -188,4 +188,61 @@ export function hashPassword() { return "h"; }
     });
     expect(result).toBe(PASSTHROUGH);
   });
+
+  it("routes SessionStart to handleSessionStart", async () => {
+    const result = await dispatchHook({
+      hook_event_name: "SessionStart",
+      cwd: projectRoot,
+      source: "startup",
+    });
+    expect(result).not.toBe(PASSTHROUGH);
+    if (result === PASSTHROUGH) return;
+    const wrapped = result as {
+      hookSpecificOutput: { hookEventName: string };
+    };
+    expect(wrapped.hookSpecificOutput.hookEventName).toBe("SessionStart");
+  });
+
+  it("routes SessionStart with source=resume to passthrough", async () => {
+    const result = await dispatchHook({
+      hook_event_name: "SessionStart",
+      cwd: projectRoot,
+      source: "resume",
+    });
+    expect(result).toBe(PASSTHROUGH);
+  });
+
+  it("routes UserPromptSubmit with matching prompt to injection", async () => {
+    const result = await dispatchHook({
+      hook_event_name: "UserPromptSubmit",
+      cwd: projectRoot,
+      prompt: "How does AuthService validate tokens?",
+    });
+    expect(result).not.toBe(PASSTHROUGH);
+    if (result === PASSTHROUGH) return;
+    const wrapped = result as {
+      hookSpecificOutput: { hookEventName: string };
+    };
+    expect(wrapped.hookSpecificOutput.hookEventName).toBe("UserPromptSubmit");
+  });
+
+  it("routes UserPromptSubmit with generic prompt to passthrough", async () => {
+    const result = await dispatchHook({
+      hook_event_name: "UserPromptSubmit",
+      cwd: projectRoot,
+      prompt: "yes",
+    });
+    expect(result).toBe(PASSTHROUGH);
+  });
+
+  it("routes PostToolUse to handlePostTool (passthrough observer)", async () => {
+    const result = await dispatchHook({
+      hook_event_name: "PostToolUse",
+      cwd: projectRoot,
+      tool_name: "Read",
+      tool_input: { file_path: authFile },
+      tool_response: "file content",
+    });
+    expect(result).toBe(PASSTHROUGH);
+  });
 });

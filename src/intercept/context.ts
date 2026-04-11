@@ -336,6 +336,28 @@ export function isInsideProject(
 }
 
 /**
+ * Validate that a cwd string from a hook payload is an absolute path
+ * pointing to an existing directory. Used by session-level handlers
+ * (SessionStart, UserPromptSubmit, PostToolUse) that trust cwd as the
+ * anchor for project detection.
+ *
+ * Without this guard, a malformed cwd like `"\0garbage"` or an empty
+ * string would cause findProjectRoot to walk up from the ambient
+ * process cwd (where engram's own source may have a .engram/ dir),
+ * hallucinating a project root that isn't what the agent actually
+ * intends. Always fail closed on bad cwd.
+ */
+export function isValidCwd(cwd: string): boolean {
+  if (!cwd || typeof cwd !== "string") return false;
+  if (!isAbsolute(cwd)) return false;
+  try {
+    return statSync(cwd).isDirectory();
+  } catch {
+    return false;
+  }
+}
+
+/**
  * One-shot helper: given an agent-supplied file path and cwd, perform ALL
  * safety checks needed before querying the graph.
  *
