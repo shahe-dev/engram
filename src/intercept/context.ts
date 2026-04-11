@@ -112,6 +112,135 @@ function isHardSystemPath(absPath: string): boolean {
 }
 
 /**
+ * Binary file extensions that engram should never attempt to summarize.
+ * These would produce garbage summaries (no code structure to extract)
+ * and wasting a Read on them is better than corrupting Claude's context.
+ */
+const BINARY_EXTENSIONS = new Set<string>([
+  // Images
+  ".png",
+  ".jpg",
+  ".jpeg",
+  ".gif",
+  ".webp",
+  ".ico",
+  ".bmp",
+  ".tiff",
+  ".svg",
+  // Documents
+  ".pdf",
+  ".doc",
+  ".docx",
+  ".xls",
+  ".xlsx",
+  ".ppt",
+  ".pptx",
+  // Archives
+  ".zip",
+  ".tar",
+  ".gz",
+  ".tgz",
+  ".bz2",
+  ".xz",
+  ".7z",
+  ".rar",
+  // Compiled / binary code
+  ".exe",
+  ".dll",
+  ".so",
+  ".dylib",
+  ".o",
+  ".a",
+  ".class",
+  ".wasm",
+  // Audio / video
+  ".mp3",
+  ".mp4",
+  ".m4a",
+  ".wav",
+  ".flac",
+  ".ogg",
+  ".avi",
+  ".mov",
+  ".mkv",
+  ".webm",
+  // Data blobs
+  ".bin",
+  ".dat",
+  ".db",
+  ".sqlite",
+  ".parquet",
+  // Fonts
+  ".ttf",
+  ".otf",
+  ".woff",
+  ".woff2",
+  ".eot",
+]);
+
+/**
+ * Detect likely binary files by extension. Returns true for anything in
+ * BINARY_EXTENSIONS. Case-insensitive on the extension.
+ *
+ * This is a cheap heuristic — it does NOT open the file to check magic
+ * bytes. The intent is to skip clearly-binary formats without adding I/O
+ * overhead to every hook invocation.
+ */
+export function isBinaryFile(absPath: string): boolean {
+  if (!absPath) return false;
+  const dot = absPath.lastIndexOf(".");
+  if (dot === -1) return false;
+  const ext = absPath.slice(dot).toLowerCase();
+  return BINARY_EXTENSIONS.has(ext);
+}
+
+/**
+ * Detect likely secret files that engram must never summarize into a
+ * graph, never surface via an intercept, and never leak into a hook
+ * response. The detection is conservative: any match → skip.
+ *
+ * Patterns match basenames (not full paths) so ".env" works regardless of
+ * directory depth.
+ */
+export function isSecretFile(absPath: string): boolean {
+  if (!absPath) return false;
+  const idx = Math.max(absPath.lastIndexOf("/"), absPath.lastIndexOf(sep));
+  const base = idx === -1 ? absPath : absPath.slice(idx + 1);
+  const lower = base.toLowerCase();
+
+  // Dotenv variants
+  if (lower === ".env") return true;
+  if (lower.startsWith(".env.")) return true;
+
+  // Classic credential / secret names
+  if (lower === "secrets.json" || lower === "secrets.yaml" || lower === "secrets.yml") return true;
+  if (lower === "credentials" || lower === "credentials.json") return true;
+  if (lower === "config.secret.json") return true;
+
+  // Private keys
+  if (lower.endsWith(".pem")) return true;
+  if (lower.endsWith(".key")) return true;
+  if (lower.endsWith(".p12")) return true;
+  if (lower.endsWith(".pfx")) return true;
+  if (lower.endsWith(".keystore")) return true;
+
+  // SSH / GPG private key material
+  if (lower === "id_rsa" || lower === "id_ed25519" || lower === "id_ecdsa" || lower === "id_dsa") {
+    return true;
+  }
+
+  return false;
+}
+
+/**
+ * Combined "never intercept this file" check. Returns true if the file
+ * is a binary or a likely secret.
+ */
+export function isContentUnsafeForIntercept(absPath: string): boolean {
+  return isBinaryFile(absPath) || isSecretFile(absPath);
+}
+
+/**
  * Walk up from a file path to find the nearest directory containing
  * `.engram/graph.db`. Returns the project root (absolute path) or null if
  * no engram-initialized project contains this file.
