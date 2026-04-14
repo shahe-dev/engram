@@ -12,6 +12,8 @@ import { extractDirectory } from "./miners/ast-miner.js";
 import { mineGitHistory } from "./miners/git-miner.js";
 import { mineSessionHistory, learnFromSession } from "./miners/session-miner.js";
 import { mineSkills } from "./miners/skills-miner.js";
+import { minePlugins } from "./miners/plugin-miner.js";
+import { mineConfig } from "./miners/config-miner.js";
 import type { GraphStats } from "./graph/schema.js";
 
 const ENGRAM_DIR = ".engram";
@@ -116,17 +118,38 @@ export async function init(
       skillEdges = skillsResult.edges;
     }
 
+    // Ecosystem indexing: plugins + nested agents, plus hooks + MCP servers
+    // from Claude Code settings. Gated behind the same opt-in flag as the
+    // skills-miner so stress tests and empty-project tests stay clean.
+    // Silent failure — these miners never throw.
+    let pluginResult: { nodes: typeof nodes; edges: typeof edges; pluginCount: number; anomalies: string[] } =
+      { nodes: [], edges: [], pluginCount: 0, anomalies: [] };
+    let configResult: { nodes: typeof nodes; edges: typeof edges } = { nodes: [], edges: [] };
+    if (options.withSkills) {
+      const skillsDirForCalc =
+        typeof options.withSkills === "string" ? options.withSkills : DEFAULT_SKILLS_DIR;
+      const claudeDir = skillsDirForCalc.replace(/[/\\]skills$/, "");
+      pluginResult = minePlugins(claudeDir, nodes);
+      const globalSettings = join(claudeDir, "settings.json");
+      const localSettings = join(root, ".claude", "settings.local.json");
+      configResult = mineConfig(globalSettings, localSettings);
+    }
+
     const allNodes = [
       ...nodes,
       ...gitResult.nodes,
       ...sessionResult.nodes,
       ...skillNodes,
+      ...pluginResult.nodes,
+      ...configResult.nodes,
     ];
     const allEdges = [
       ...edges,
       ...gitResult.edges,
       ...sessionResult.edges,
       ...skillEdges,
+      ...pluginResult.edges,
+      ...configResult.edges,
     ];
 
     const store = await getStore(root);
