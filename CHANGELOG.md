@@ -6,6 +6,29 @@ All notable changes to engram are documented here. Format based on
 
 ## [Unreleased]
 
+### Added
+
+- **`plugin-miner`** — indexes installed Claude Code plugins and their
+  provided agents as `concept` nodes with `metadata.subkind` of
+  `"plugin"` or `"agent"`. Plugin-provided skills are also indexed with
+  `subkind: "skill"`, scored against the project's detected stack, and
+  linked to their parent plugin via `provided_by` edges. Skills scored
+  EXTRACTED or INFERRED also get `relevant_to` edges to matching
+  project files.
+- **`config-miner`** — indexes configured hooks (`subkind: "hook"`) and
+  MCP servers (`subkind: "mcp_server"`) from `~/.claude/settings.json`
+  and `<project>/.claude/settings.local.json`. Always-on infrastructure
+  — confidence fixed at EXTRACTED 1.0, no `relevant_to` edges.
+- **`stack-detect`** utility (`src/graph/stack-detect.ts`) — pure
+  function that derives a set of lowercase language/framework tokens
+  from a snapshot of graph nodes. Single source of truth for stack
+  detection across miners.
+- **New `EdgeRelation` values**: `provided_by` and `relevant_to`.
+- Environment variable `ENGRAM_SKIP_ECOSYSTEM=1` disables both new
+  miners. Also gated behind the existing `options.withSkills` flag so
+  empty-project and stress tests stay isolated from the real
+  `~/.claude` tree.
+
 ## [3.0.2] — 2026-04-24 — "MCP Registry"
 
 Chore release. No runtime changes. Adds the `mcpName` field to `package.json`
@@ -632,8 +655,6 @@ files — existing `.engram/graph.db` files auto-migrate to schema v7.
   escaping to single-quote wrapping for all CLI arguments.
 - **HTTP server package.json path resolution** — now resolves correctly
   from both `src/` (dev) and `dist/` (built) entry points.
-
----
 
 ## [0.5.0] — 2026-04-13 — "Context Spine"
 
