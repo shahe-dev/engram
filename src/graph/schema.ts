@@ -72,7 +72,12 @@ export type EdgeRelation =
   // v0.2: skills-miner uses this to link keyword concept nodes to the
   // skill concept nodes they activate. Skills themselves use the existing
   // `similar_to` relation for cross-references (Related Skills sections).
-  | "triggered_by";
+  | "triggered_by"
+  // v0.5: ecosystem miners use these to link plugin-provided skills/agents
+  // to their parent plugin (`provided_by`) and to project files the skill
+  // is relevant to (`relevant_to`, only emitted for EXTRACTED/INFERRED).
+  | "provided_by"
+  | "relevant_to";
 
 export interface GraphStats {
   readonly nodes: number;
