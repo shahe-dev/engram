@@ -238,3 +238,15 @@ describe("Core — init lockfile guard (v0.2)", () => {
     expect(existsSync(join(tmpDir, ".engram", "init.lock"))).toBe(false);
   });
 });
+
+import { mineConfig } from "../src/miners/config-miner.js";
+import { minePlugins } from "../src/miners/plugin-miner.js";
+
+describe("ecosystem miners integration", () => {
+  it("plugin-miner and config-miner are invokable with no-op inputs", () => {
+    const pluginResult = minePlugins("/nonexistent", []);
+    const configResult = mineConfig(undefined, undefined);
+    expect(pluginResult.nodes).toHaveLength(0);
+    expect(configResult.nodes).toHaveLength(0);
+  });
+});
