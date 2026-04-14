@@ -1,0 +1,14 @@
+{
+  "plugins": {
+    "sample-plugin@mp": [
+      {
+        "scope": "user",
+        "installPath": "FIXTURE_ABS_PATH",
+        "version": "1.2.3",
+        "installedAt": "2026-04-01T00:00:00Z",
+        "lastUpdated": "2026-04-10T00:00:00Z",
+        "gitCommitSha": "abc123"
+      }
+    ]
+  }
+}
